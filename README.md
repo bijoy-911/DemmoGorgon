@@ -142,5 +142,5 @@ Make sure these files exist inside the `Photos/` directory (names must match exa
 ---
 
 ## Project Report
-(https://drive.google.com/drive/u/1/my-drive)
+(https://drive.google.com/file/d/1w_VfwWBSpd8fdADi1ynqD3skfo_E92f_/view?usp=sharing)
 
