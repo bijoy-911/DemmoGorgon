@@ -14,24 +14,24 @@
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
-// Constants
+
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 700
 #define WORLD_WIDTH 3000
 #define MAX_ENEMIES 8
-#define PLAYER_SPEED 4
-#define ENEMY_SPEED 0.8
+#define PLAYER_SPEED 7
+#define ENEMY_SPEED 1.6
 #define PROJECTILE_SPEED 8
 #define MAX_PROJECTILES 50
 #define MAX_COINS 100
 #define MAX_BOSS_PROJECTILES 50
-#define BOSS_PROJECTILE_SPEED 3
+#define BOSS_PROJECTILE_SPEED 4
 #define BOSS_TRIGGER_SCORE 20
 const float GRAVITY = 0.9f;
 const float JUMP_VEL = 14.0f;
 const int   PRE_JUMP_FRAMES = 6;
 const int   LAND_FRAMES = 6;
-// Animation states
+
 enum AnimationState {
 	STATE_IDLE,
 	STATE_RUNNING,
@@ -42,7 +42,7 @@ enum AnimationState {
 	STATE_DEAD
 };
 
-// Game states
+
 enum GameState {
 	START_PAGE,
 	INSTRUCTIONS,
@@ -54,7 +54,7 @@ enum GameState {
 	PAUSED
 };
 
-// Character types
+
 enum CharacterType {
 	STEVE,
 	ELEVEN,
@@ -85,7 +85,7 @@ struct Boss {
 	int hitFlashTimer;
 };
 
-// Projectile structure
+
 struct Projectile {
 	float x, y;
 	bool active;
@@ -95,7 +95,6 @@ struct Projectile {
 };
 
 
-// Enemy structure
 struct Enemy {
 	float x, y;
 	int maxHealth;
@@ -114,7 +113,7 @@ struct Enemy {
 	bool coinDropped;
 };
 
-// Player structure
+
 struct Player {
 	float x, y;
 	int health;
@@ -123,17 +122,17 @@ struct Player {
 	AnimationState animState;
 	int animFrame;
 	int animDelay;
-	int direction; // 0:right, 1:left, 2:up, 3:down
+	int direction; 
 	bool isAttacking;
 	int attackFrame;
 	float angle;
 	float vy;
-	int jumpPhase;      // 0 none, 1 pre, 2 up, 3 peak, 4 down, 5 land
+	int jumpPhase;     
 	int jumpTimer;
 	float airBoostVx;
 };
 
-// Button structure
+
 struct Button {
 	int x, y, w, h;
 	char text[50];
@@ -148,7 +147,7 @@ struct Coin {
 	int amount;
 };
 
-// Function declarations
+
 void initGame();
 void drawStartPage();
 void drawInstructions();
@@ -177,7 +176,7 @@ void shootBossProjectile();
 void updateBossProjectiles();
 void checkBossCollisions();
 
-// Button actions
+
 void actionStartGame();
 void actionInstructions();
 void actionHighScores();
@@ -189,7 +188,9 @@ void actionSelectEleven();
 void actionPlayAgain();
 void actionResume();
 void actionMainMenu();
-// Global variables
+
+
+
 extern GameState currentState;
 extern Player player;
 extern Enemy enemies[MAX_ENEMIES];
@@ -214,8 +215,7 @@ extern unsigned int bossAttack1;
 extern unsigned int bossAttack2;
 extern bool bossFightStarted;
 
-// Image textures
-// Page Images
+
 extern unsigned int homepageBg;
 extern unsigned int menuBg;
 extern unsigned int instructionBg;
@@ -224,43 +224,82 @@ extern unsigned int creditsBg;
 extern unsigned int gameBg;
 extern unsigned int characterSelectBg;
 
-// Button Images
+
 extern unsigned int startBtnImg;
 extern unsigned int instructionBtnImg;
 extern unsigned int scoreBtnImg;
 extern unsigned int creditBtnImg;
 extern unsigned int exitBtnImg;
 
-// Steve Images
+
 extern unsigned int steveIdle;
+
+
 extern unsigned int steveRun1;
 extern unsigned int steveRun2;
-extern unsigned int stevePreShoot;
-extern unsigned int steveAttack1;
-extern unsigned int steveAttack2;
+extern unsigned int steveRun3;
+extern unsigned int steveRun4;
+extern unsigned int steveRun5;
+extern unsigned int steveRun6;
 
-// Eleven Images
+
+extern unsigned int steveDamage1;
+extern unsigned int steveDamage2;
+extern unsigned int steveDamage3;
+
+
+extern unsigned int stevePreAttack;
+extern unsigned int steveShoot;
+extern unsigned int stevePostShoot;
+
+
 extern unsigned int elevenIdle;
+
 extern unsigned int elevenRun1;
 extern unsigned int elevenRun2;
-extern unsigned int elevenPreShoot;
-extern unsigned int elevenAttack1;
+extern unsigned int elevenRun3;
+extern unsigned int elevenRun4;
+extern unsigned int elevenRun5;
+extern unsigned int elevenRun6;
 
-// Enemy Images
+extern unsigned int elevenPreDamage;
+extern unsigned int elevenDamage;
+extern unsigned int elevenPostDamage;
+
+extern unsigned int elevenPreAttack;
+extern unsigned int elevenPreAttack1;
+extern unsigned int elevenAttack;
+
+
 extern unsigned int enemyIdle;
+
+
 extern unsigned int enemyRun1;
 extern unsigned int enemyRun2;
+extern unsigned int enemyRun3;
+extern unsigned int enemyRun4;
+extern unsigned int enemyRun5;
+
+
+extern unsigned int enemyDeath1; 
+extern unsigned int enemyDeath2; 
+extern unsigned int enemyDeath3; 
+extern unsigned int enemyDeath4; 
+extern unsigned int enemyDeath5; 
+
+
+
 extern unsigned int enemyAttack1;
 extern unsigned int enemyAttack2;
-extern unsigned int enemyDamage;
-extern unsigned int enemyDie;
+extern unsigned int enemyAttack3;
+
 extern unsigned int elevenPreJump;
 extern unsigned int elevenJumpStart;
 extern unsigned int elevenJumpPeak;
 extern unsigned int elevenJumpDown;
 extern unsigned int elevenToLand;
 extern unsigned int elevenLand;
-// Health Bar Image
+
 extern unsigned int healthBarImg;
 
 extern unsigned int coinImg;

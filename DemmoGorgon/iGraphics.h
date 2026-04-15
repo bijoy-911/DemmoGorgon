@@ -1,11 +1,3 @@
-//
-//  Original Author: S. M. Shahriar Nirjon
-//
-//  Last Modified by: Mr. Mohammad Imrul Jubair [Assistant Professor (AUST CSE)]
-//  Last Updated: 16 December 2017 
-//
-//  Version: 4.0
-//
 
 # include <stdio.h>
 # include <stdlib.h>
@@ -96,22 +88,7 @@ void iResumeTimer(int index){
     }
 }
 
-//
-// Puts a BMP image on screen
-//
-// parameters:
-//  x - x coordinate
-//  y - y coordinate
-//  filename - name of the BMP file
-//  ignoreColor - A specified color that should not be rendered. If you have an
-//                image strip that should be rendered on top of another back
-//                ground image, then the background of the image strip should
-//                not get rendered. Use the background color of the image strip
-//                in ignoreColor parameter. Then the strip's background does
-//                not get rendered.
-//
-//                To disable this feature, put -1 in this parameter
-//
+
 void iShowBMP2(int x, int y, char filename[], int ignoreColor)
 {
     AUX_RGBImageRec *TextureImage;
@@ -145,7 +122,7 @@ void iShowBMP2(int x, int y, char filename[], int ignoreColor)
 
 void iShowBMP(int x, int y, char filename[])
 {
-    iShowBMP2(x, y, filename, -1 /* ignoreColor */);
+    iShowBMP2(x, y, filename, -1 );
 }
 
 unsigned int iLoadImage(char filename[])
@@ -218,7 +195,7 @@ void iShowImageFlipped(int x, int y, int width, int height, unsigned int texture
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	// Texture coordinates for flipping
+
 	float texLeft = flipHorizontal ? 1.0f : 0.0f;
 	float texRight = flipHorizontal ? 0.0f : 1.0f;
 
@@ -248,7 +225,7 @@ void iGetPixelColor (int cursorX, int cursorY, int rgb[])
     rgb[1] = pixel[1];
     rgb[2] = pixel[2];
 
-    //printf("%d %d %d\n",pixel[0],pixel[1],pixel[2]);
+
 }
 
 void iText(GLdouble x, GLdouble y, char *str, void* font=GLUT_BITMAP_8_BY_13)
@@ -256,7 +233,7 @@ void iText(GLdouble x, GLdouble y, char *str, void* font=GLUT_BITMAP_8_BY_13)
     glRasterPos3d(x, y, 0);
     int i;
     for (i=0; str[i]; i++) {
-        glutBitmapCharacter(font, str[i]); //,GLUT_BITMAP_8_BY_13, GLUT_BITMAP_TIMES_ROMAN_24
+        glutBitmapCharacter(font, str[i]); 
     }
 }
 
@@ -412,18 +389,7 @@ void iFilledEllipse(double x, double y, double a, double b, int slices=100)
     glEnd();
 }
 
-// Rotates the co-ordinate system
-// Parameters:
-//  (x, y) - The pivot point for rotation
-//  degree - degree of rotation
-//
-// After calling iRotate(), evrey subsequent rendering will
-// happen in rotated fashion. To stop rotation of subsequent rendering,
-// call iUnRotate(). Typical call pattern would be:
-//      iRotate();
-//      Render your objects, that you want rendered as rotated
-//      iUnRotate();
-//
+
 void iRotate(double x, double y, double degree)
 {
 	glPushMatrix();
@@ -563,8 +529,7 @@ void iInitialize(int width=500, int height=500, char *title="iGraphics", int key
     glMatrixMode( GL_PROJECTION) ;
     glLoadIdentity() ;
     glOrtho(0.0 , width , 0.0 , height , -1.0 , 1.0) ;
-    //glOrtho(-100.0 , 100.0 , -100.0 , 100.0 , -1.0 , 1.0) ;
-    //SetTimer(0, 0, 10, timer_proc);
+
 
 
 }
@@ -574,8 +539,8 @@ void iStart()
     iClear();
 
     glutDisplayFunc(displayFF) ;
-    glutKeyboardFunc(keyboardHandler1FF); //normal
-    glutSpecialFunc(keyboardHandler2FF); //special keys
+    glutKeyboardFunc(keyboardHandler1FF); 
+    glutSpecialFunc(keyboardHandler2FF); 
 	glutKeyboardUpFunc(keyboardHandlerUp1FF);
 	glutSpecialUpFunc(keyboardHandlerUp2FF);
     glutMouseFunc(mouseHandlerFF);
@@ -583,11 +548,7 @@ void iStart()
 	glutPassiveMotionFunc(mousePassiveMoveHandlerFF);
     glutIdleFunc(animFF) ;
 
-    //
-    // Setup Alpha channel testing.
-    // If alpha value is greater than 0, then those
-    // pixels will be rendered. Otherwise, they would not be rendered
-    //
+
     glAlphaFunc(GL_GREATER,0.0f);
     glEnable(GL_ALPHA_TEST);
 

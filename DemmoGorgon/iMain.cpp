@@ -3,7 +3,7 @@
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
 
-// Global variables
+
 GameState currentState = START_PAGE;
 Player player;
 Enemy enemies[MAX_ENEMIES];
@@ -17,9 +17,9 @@ int frameCount = 0;
 int enemySpawnTimer = 0;
 int score = 0;
 const float GROUND_NORMAL = 140.0f;
-const float GROUND_BOSS = 120.0f;   // lower ground (decrease more if needed)
+const float GROUND_BOSS = 120.0f;   
 float ground = GROUND_NORMAL;
-float SCALE = 0.5f;   // 50% size
+float SCALE = 0.5f;   
 int playerWidth = 240 * SCALE;
 int playerHeight = 320 * SCALE;
 int enemyWidth = 200 * SCALE;
@@ -28,6 +28,9 @@ float cameraX = 0.0f;
 Coin coins[MAX_COINS];
 int totalCoins = 0;
 unsigned int coinImg = 0;
+const float ENEMY_ATTACK_RANGE = 90.0f;  
+const int   ENEMY_ATTACK_DAMAGE = 4;     
+const int   ENEMY_ATTACK_COOLDOWN = 60;   
 Boss boss;
 BossProjectile bossProjectiles[MAX_BOSS_PROJECTILES];
 bool bossFightStarted = false;
@@ -46,11 +49,11 @@ unsigned int steveJump1 = 0;
 unsigned int steveJump2 = 0;
 unsigned int steveJump3 = 0;
 unsigned int steveLand = 0;
-unsigned int elevenPreJump = 0;     // elevenprejump.png
-unsigned int elevenJumpStart = 0;   // elevenprejump1.png
-unsigned int elevenJumpPeak = 0;    // elevenjump1.png
-unsigned int elevenJumpDown = 0;    // elevenjump2.png
-unsigned int elevenToLand = 0;      // elevenjump3.png
+unsigned int elevenPreJump = 0;     
+unsigned int elevenJumpStart = 0;   
+unsigned int elevenJumpPeak = 0;    
+unsigned int elevenJumpDown = 0;    
+unsigned int elevenToLand = 0;     
 unsigned int elevenLand = 0;
 unsigned int bulletPickupImg = 0;
 unsigned int shieldPickupImg = 0;
@@ -63,7 +66,8 @@ bool bossCameraLocked = false;
 float bossCameraLockX = 0.0f;
 float bossArenaLeft = 0.0f;
 float bossArenaRight = 0.0f;
-
+int bossShootAnimTimer = 0;
+const int BOSS_SHOOT_ANIM_TICKS = 25;
 bool shieldActive = false;
 int shieldTimer = 0;
 
@@ -74,12 +78,12 @@ int shieldMsgTimer = 0;
 int lastBulletsGained = 0;
 
 int bossHitsTaken = 0;
-int bossHitsForShootReset = 0;   // counts player bullet hits
+int bossHitsForShootReset = 0;   
 const int SHOOT_RESET_AFTER_HITS = 3;
 
-// timers (20ms update -> 50 ticks/sec)
-const int SHIELD_DURATION_TICKS = 10 * 50; // 10 seconds
-const int MSG_DURATION_TICKS = 2 * 50;     // 2 seconds
+
+const int SHIELD_DURATION_TICKS = 10 * 50; 
+const int MSG_DURATION_TICKS = 2 * 50;     
 void playMusic(const char* filename) {
 	mciSendString("close bgm", NULL, 0, NULL);
 
@@ -94,8 +98,7 @@ void stopMusic() {
 	mciSendString("close bgm", NULL, 0, NULL);
 }
 
-// Image textures initialization
-// Page Images
+
 unsigned int homepageBg = 0;
 unsigned int menuBg = 0;
 unsigned int instructionBg = 0;
@@ -104,7 +107,7 @@ unsigned int creditsBg = 0;
 unsigned int gameBg = 0;
 unsigned int characterSelectBg = 0;
 
-// Button Images
+
 unsigned int startBtnImg;
 unsigned int instructionBtnImg;
 unsigned int scoreBtnImg;
@@ -112,36 +115,53 @@ unsigned int creditBtnImg;
 unsigned int exitBtnImg;
 unsigned int backBtnImg;
 
-// Steve Images
-unsigned int steveIdle = 0;
-unsigned int steveRun1 = 0;
-unsigned int steveRun2 = 0;
-unsigned int stevePreShoot = 0;
-unsigned int steveAttack1 = 0;
-unsigned int steveAttack2 = 0;
 
-// Eleven Images
+unsigned int steveIdle = 0;
+
+unsigned int steveRun1 = 0, steveRun2 = 0, steveRun3 = 0;
+unsigned int steveRun4 = 0, steveRun5 = 0, steveRun6 = 0;
+
+unsigned int steveDamage1 = 0, steveDamage2 = 0, steveDamage3 = 0;
+
+unsigned int stevePreAttack = 0;
+unsigned int steveShoot = 0;
+unsigned int stevePostShoot = 0;
+
 unsigned int elevenIdle = 0;
+
+
 unsigned int elevenRun1 = 0;
 unsigned int elevenRun2 = 0;
-unsigned int elevenPreShoot = 0;
-unsigned int elevenAttack1 = 0;
+unsigned int elevenRun3 = 0;
+unsigned int elevenRun4 = 0;
+unsigned int elevenRun5 = 0;
+unsigned int elevenRun6 = 0;
 
-// Enemy Images
+
+unsigned int elevenPreDamage = 0;
+unsigned int elevenDamage = 0;
+unsigned int elevenPostDamage = 0;
+
+
+unsigned int elevenPreAttack = 0;
+unsigned int elevenPreAttack1 = 0;
+unsigned int elevenAttack = 0;
+
+
 unsigned int enemyIdle = 0;
-unsigned int enemyRun1 = 0;
-unsigned int enemyRun2 = 0;
-unsigned int enemyAttack1 = 0;
-unsigned int enemyAttack2 = 0;
-unsigned int enemyDamage = 0;
-unsigned int enemyDie = 0;
 
-// Forward declarations (avoid "identifier not found" issues)
+unsigned int enemyRun1 = 0, enemyRun2 = 0, enemyRun3 = 0, enemyRun4 = 0, enemyRun5 = 0;
+
+unsigned int enemyDeath1 = 0, enemyDeath2 = 0, enemyDeath3 = 0, enemyDeath4 = 0, enemyDeath5 = 0;
+
+unsigned int enemyAttack1 = 0, enemyAttack2 = 0, enemyAttack3 = 0;
+
+
 void addHighScore(int newScore);
 void saveHighScore();
 void loadHighScore();
 
-// Button action implementations
+
 void actionStartGame() {
 	currentState = CHARACTER_SELECT;
 	stopMusic();
@@ -205,7 +225,7 @@ void actionMainMenu() {
 	playMusic("Photos/bg.mp3");
 }
 
-// Save high score to file
+
 void saveHighScore() {
 	FILE* file = nullptr;
 	if (fopen_s(&file, "highscores.dat", "wb") == 0 && file) {
@@ -214,7 +234,7 @@ void saveHighScore() {
 	}
 }
 
-// Load high score from file
+
 void loadHighScore() {
 	FILE* file = nullptr;
 	if (fopen_s(&file, "highscores.dat", "rb") == 0 && file) {
@@ -222,18 +242,17 @@ void loadHighScore() {
 		fclose(file);
 	}
 	else {
-		// Initialize with default values
+
 		for (int i = 0; i < 10; i++) {
 			highScores[i] = 100 - i * 10;
 		}
 	}
 }
 
-// Add score to high scores
+
 void addHighScore(int newScore) {
 	for (int i = 0; i < 10; i++) {
 		if (newScore > highScores[i]) {
-			// Shift lower scores down
 			for (int j = 9; j > i; j--) {
 				highScores[j] = highScores[j - 1];
 			}
@@ -247,49 +266,47 @@ void addHighScore(int newScore) {
 void initButtons() {
 	buttonCount = 0;
 
-	// Start page buttons
+
 	buttons[buttonCount++] = { WINDOW_WIDTH / 2 - 100, 500, 200, 50, "START GAME", false, true, actionStartGame };
 	buttons[buttonCount++] = { WINDOW_WIDTH / 2 - 100, 430, 200, 50, "INSTRUCTIONS", false, true, actionInstructions };
 	buttons[buttonCount++] = { WINDOW_WIDTH / 2 - 100, 360, 200, 50, "HIGH SCORES", false, true, actionHighScores };
 	buttons[buttonCount++] = { WINDOW_WIDTH / 2 - 100, 290, 200, 50, "CREDITS", false, true, actionCredits };
 	buttons[buttonCount++] = { WINDOW_WIDTH / 2 - 100, 220, 200, 50, "EXIT", false, true, actionExit };
 
-	// Character select buttons
+
 	buttons[buttonCount++] = { 187, 64, 283, 58, "STEVE", false, true, actionSelectSteve };
 	buttons[buttonCount++] = { 706, 64, 372, 58, "ELEVEN", false, true, actionSelectEleven };
 
-	// Back button (used in multiple pages)
 	buttons[buttonCount++] = { 50, 50, 100, 40, "BACK", false, true, actionBack };
 
-	// Game over button
+
 	buttons[buttonCount++] = { WINDOW_WIDTH / 2 - 100, 250, 200, 50, "PLAY AGAIN", false, true, actionPlayAgain };
 
-	// Pause menu buttons
+
 	buttons[buttonCount++] = { WINDOW_WIDTH / 2 - 100, 400, 200, 50, "RESUME", false, true, actionResume };
 	buttons[buttonCount++] = { WINDOW_WIDTH / 2 - 100, 330, 200, 50, "MAIN MENU", false, true, actionMainMenu };
 }
 
 void loadImages() {
-	// Page backgrounds
+
 	homepageBg = iLoadImage("Photos/Homepage.png");
-	//	printf("homepageBg loaded: %d\n", homepageBg);
 	menuBg = iLoadImage("Photos/menu.png");
 
-	// Use one of your instruction images (pick one)
-	instructionBg = iLoadImage("Photos/SteveInstructions.png");   // or ElevenInstructions.png
 
-	// Score page background: use an actual eleven image you have
-	scoreBg = iLoadImage("Photos/eleven1.png");
+	instructionBg = iLoadImage("Photos/SteveInstructions.png");   
+
+
+	scoreBg = iLoadImage("Photos/scoreBoard.png");
 
 	creditsBg = iLoadImage("Photos/Credit.png");
 
-	// Game background: use existing file
-	gameBg = iLoadImage("Photos/gamebg.png");      // or startpage.png if you prefer
 
-	// Character select background
+	gameBg = iLoadImage("Photos/gamebg.png");     
+
+
 	characterSelectBg = iLoadImage("Photos/CharacterChoose.png");
 
-	// Buttons (you only have one button image in folder)
+
 	startBtnImg = iLoadImage("Photos/buttonStock1.png");
 	instructionBtnImg = iLoadImage("Photos/Instructions.png");
 	scoreBtnImg = iLoadImage("Photos/HighScore.png");
@@ -297,29 +314,63 @@ void loadImages() {
 	exitBtnImg = iLoadImage("Photos/buttonStock1k.png");
 	backBtnImg = iLoadImage("Photos/backButton.png");
 
-	// Steve sprites
-	steveIdle = iLoadImage("Photos/steve1.png");
-	steveRun1 = iLoadImage("Photos/steve2.png");
-	steveRun2 = iLoadImage("Photos/steve4.png");
-	stevePreShoot = iLoadImage("Photos/steve3.png");
-	steveAttack1 = stevePreShoot;
-	steveAttack2 = stevePreShoot;
+	steveIdle = iLoadImage("Photos/steveidle.png");
 
-	// Eleven sprites
-	elevenIdle = iLoadImage("Photos/eleven1.png");
-	elevenRun1 = iLoadImage("Photos/eleven3.png");
-	elevenRun2 = iLoadImage("Photos/eleven4.png");
-	elevenPreShoot = iLoadImage("Photos/elevenattack.png");
-	elevenAttack1 = iLoadImage("Photos/elevenattack1.png");
+	steveRun1 = iLoadImage("Photos/steverun1.png");
+	steveRun2 = iLoadImage("Photos/steverun2.png");
+	steveRun3 = iLoadImage("Photos/steverun3.png");
+	steveRun4 = iLoadImage("Photos/steverun4.png");
+	steveRun5 = iLoadImage("Photos/steverun5.png");
+	steveRun6 = iLoadImage("Photos/steverun6.png");
 
-	// Enemy sprites
-	enemyIdle = iLoadImage("Photos/DeMorgonStay1.png");
-	enemyRun1 = iLoadImage("Photos/DeMorgonRunning1.png");
-	enemyRun2 = iLoadImage("Photos/DeMorgonRunning2.png");
-	enemyAttack1 = iLoadImage("Photos/DeMorgonAttack1.png");
-	enemyAttack2 = iLoadImage("Photos/DeMorgonAttack2.png");
-	enemyDamage = iLoadImage("Photos/DeMorgonTakeDamage1.png");
-	enemyDie = iLoadImage("Photos/DeMorgonDying2.png");
+	steveDamage1 = iLoadImage("Photos/stevedamage1.png");
+	steveDamage2 = iLoadImage("Photos/stevedamage2.png");
+	steveDamage3 = iLoadImage("Photos/stevedamage3.png");
+
+	stevePreAttack = iLoadImage("Photos/stevepreshoot.png");
+	steveShoot = iLoadImage("Photos/steveshoot.png");
+	stevePostShoot = iLoadImage("Photos/stevepostshoot.png");
+
+	elevenIdle = iLoadImage("Photos/elevenidle.png");
+
+	elevenRun1 = iLoadImage("Photos/elevenrun1.png");
+	elevenRun2 = iLoadImage("Photos/elevenrun2.png");
+	elevenRun3 = iLoadImage("Photos/elevenrun3.png");
+	elevenRun4 = iLoadImage("Photos/elevenrun4.png");
+	elevenRun5 = iLoadImage("Photos/elevenrun5.png");
+	elevenRun6 = iLoadImage("Photos/elevenrun6.png");
+
+
+	elevenPreDamage = iLoadImage("Photos/elevenpredamage.png");
+	elevenDamage = iLoadImage("Photos/elevendamage.png");
+	elevenPostDamage = iLoadImage("Photos/elevenpostdamage.png");
+
+
+	elevenPreAttack = iLoadImage("Photos/elevenpreattack.png");
+	elevenPreAttack1 = iLoadImage("Photos/elevenpreattack1.png");
+	elevenAttack = iLoadImage("Photos/elevenattack.png");
+
+
+	enemyIdle = iLoadImage("Photos/enemyidle.png");
+
+
+	enemyRun1 = iLoadImage("Photos/enemyrun1.png");
+	enemyRun2 = iLoadImage("Photos/enemyrun2.png");
+	enemyRun3 = iLoadImage("Photos/enemyrun3.png");
+	enemyRun4 = iLoadImage("Photos/enemyrun4.png");
+	enemyRun5 = iLoadImage("Photos/enemyrun5.png");
+
+
+	enemyDeath1 = iLoadImage("Photos/enemydamage.png");
+	enemyDeath2 = iLoadImage("Photos/enemydamage1.png");
+	enemyDeath3 = iLoadImage("Photos/enemydamage3.png");
+	enemyDeath4 = iLoadImage("Photos/enemydamage4.png");
+	enemyDeath5 = iLoadImage("Photos/enemydamage5.png");
+
+
+	enemyAttack1 = iLoadImage("Photos/enemyattack1.png");
+	enemyAttack2 = iLoadImage("Photos/enemyattack2.png");
+	enemyAttack3 = iLoadImage("Photos/enemyattack3.png");
 
 	coinImg = iLoadImage("Photos/coin.png");
 	bossIdle = iLoadImage("Photos/bossidle.png");
@@ -338,7 +389,6 @@ void loadImages() {
 	steveJump3 = iLoadImage("Photos/stevejump3.png");
 	steveLand = iLoadImage("Photos/steveland.png");
 
-	// Eleven jump sprites
 	elevenPreJump = iLoadImage("Photos/elevenprejump.png");
 	elevenJumpStart = iLoadImage("Photos/elevenprejump1.png");
 	elevenJumpPeak = iLoadImage("Photos/elevenjump1.png");
@@ -360,55 +410,55 @@ void initGame() {
 	resetGame();
 }
 void startJump() {
-	if (player.jumpPhase != 0) return;   // already jumping/landing
+	if (player.jumpPhase != 0) return;   
 
-	player.jumpPhase = 1;                // PRE
+	player.jumpPhase = 1;                
 	player.jumpTimer = PRE_JUMP_FRAMES;
 	player.vy = 0;
 
-	// small forward boost in facing direction
+
 	player.airBoostVx = (player.direction == 0) ? 2.2f : -2.2f;
 }
 
 void updateJump() {
-	// Landing animation countdown
-	if (player.jumpPhase == 5) { // LAND
+
+	if (player.jumpPhase == 5) { 
 		if (--player.jumpTimer <= 0) {
-			player.jumpPhase = 0; // back to normal
+			player.jumpPhase = 0; 
 		}
 		return;
 	}
 
-	// Pre-jump delay before leaving ground
-	if (player.jumpPhase == 1) { // PRE
+
+	if (player.jumpPhase == 1) { 
 		if (--player.jumpTimer <= 0) {
 			player.vy = JUMP_VEL;
-			player.jumpPhase = 2; // UP
+			player.jumpPhase = 2; 
 		}
 		return;
 	}
 
-	// In-air physics (UP/PEAK/DOWN)
+
 	if (player.jumpPhase >= 2 && player.jumpPhase <= 4) {
 
-		// apply slight forward movement while in air
+
 		player.x += player.airBoostVx;
 		player.airBoostVx *= 0.92f;
 
-		// vertical motion
+
 		player.y += player.vy;
 		player.vy -= GRAVITY;
 
-		// choose jump phase based on velocity
-		if (player.vy > 3.0f) player.jumpPhase = 2;           // UP
-		else if (fabs(player.vy) <= 3.0f) player.jumpPhase = 3; // PEAK
-		else player.jumpPhase = 4;                            // DOWN
 
-		// landed?
+		if (player.vy > 3.0f) player.jumpPhase = 2;          
+		else if (fabs(player.vy) <= 3.0f) player.jumpPhase = 3; 
+		else player.jumpPhase = 4;                           
+
+
 		if (player.y <= ground) {
 			player.y = ground;
 			player.vy = 0;
-			player.jumpPhase = 5;     // LAND
+			player.jumpPhase = 5;    
 			player.jumpTimer = LAND_FRAMES;
 		}
 	}
@@ -434,7 +484,7 @@ void resetGame() {
 
 	for (int i = 0; i < MAX_ENEMIES; i++) {
 		enemies[i].active = false;
-		enemies[i].health = 3;     // ADD THIS
+		enemies[i].health = 3;     
 		enemies[i].maxHealth = 3;
 		enemies[i].frame = rand() % 360;
 		enemies[i].angle = 0;
@@ -517,26 +567,26 @@ void spawnBoss() {
 	boss.animState = STATE_IDLE;
 	boss.animFrame = 0;
 	boss.animDelay = 0;
-	boss.attackCooldown = 150; // ADDED: Wait 3 seconds before first shot
+	boss.attackCooldown = 150; 
 	boss.hitFlashTimer = 0;
 
 	bossFightStarted = true;
 	ground = GROUND_BOSS;
-	// ---- lock camera for boss arena ----
+	
 	bossCameraLocked = true;
-	bossCameraLockX = cameraX;               // lock at current view
+	bossCameraLockX = cameraX;             
 	bossArenaLeft = bossCameraLockX;
 	bossArenaRight = bossCameraLockX + WINDOW_WIDTH;
 
-	// force camera to stay locked
+	
 	cameraX = bossCameraLockX;
 
-	// ensure boss spawns inside the visible arena
+	
 	float bossHalfW = (300 * SCALE) * 0.5f;
 	boss.x = player.x + 350;
 	if (boss.x > bossArenaRight - bossHalfW) boss.x = bossArenaRight - bossHalfW;
 	if (boss.x < bossArenaLeft + bossHalfW)  boss.x = bossArenaLeft + bossHalfW;
-	// snap characters to the new ground
+	
 	if (player.jumpPhase == 0) player.y = ground;
 	boss.y = ground;
 
@@ -545,7 +595,7 @@ void spawnBoss() {
 	}
 	stopMusic();
 	playMusic("Photos/bossFight.mp3");
-	// stop normal enemies
+	
 	for (int i = 0; i < MAX_ENEMIES; i++) {
 		enemies[i].active = false;
 	}
@@ -601,28 +651,28 @@ void spawnEnemy() {
 			float leftVisible = cameraX;
 			float rightVisible = cameraX + WINDOW_WIDTH;
 
-			int side = rand() % 2; // 0 = left, 1 = right
+			int side = rand() % 2; 
 
 			if (side == 0) {
-				// Spawn off-screen left
+				
 				enemies[i].x = leftVisible - (100 + rand() % 200);
 
 				if (enemies[i].x < 30)
 					enemies[i].x = 30;
 
-				// If too close to visible area, push further left
+				
 				if (enemies[i].x > leftVisible - 80)
 					enemies[i].x = leftVisible - 120;
 				enemies[i].facingLeft = false;
 			}
 			else {
-				// Spawn off-screen right
+				
 				enemies[i].x = rightVisible + (100 + rand() % 200);
 
 				if (enemies[i].x > WORLD_WIDTH - 100)
 					enemies[i].x = WORLD_WIDTH - 100;
 
-				// If too close to visible area, push further right
+				
 				if (enemies[i].x < rightVisible + 80)
 					enemies[i].x = rightVisible + 120;
 				enemies[i].facingLeft = true;
@@ -637,56 +687,56 @@ void spawnEnemy() {
 }
 
 void updateAnimations() {
-	// Update player animation
+	
 	player.animDelay++;
-	if (player.animDelay > 10) { // Change frame every 5 game cycles
+	if (player.animDelay > 4) {
 		player.animDelay = 0;
 		player.animFrame++;
 
-		// Loop animations based on state
 		switch (player.animState) {
+
 		case STATE_RUNNING:
-			if (player.animFrame > 1) player.animFrame = 0;
+			
+			if (player.animFrame > 5) player.animFrame = 0;
 			break;
-		case STATE_ATTACK:
-			if (player.animFrame > 1) {
+
+		case STATE_DAMAGE:
+			
+			if (player.animFrame > 2) {
 				player.animFrame = 0;
 				player.animState = STATE_IDLE;
 			}
 			break;
+
 		case STATE_IDLE:
 		default:
 			player.animFrame = 0;
 			break;
 		}
 	}
-
-	// Update enemy animations
 	for (int i = 0; i < MAX_ENEMIES; i++) {
 		if (enemies[i].active) {
 			enemies[i].animDelay++;
-			if (enemies[i].animDelay >12) {
+			if (enemies[i].animDelay >5) {
 				enemies[i].animDelay = 0;
 				enemies[i].animFrame++;
 
 				switch (enemies[i].animState) {
+
 				case STATE_RUNNING:
-					if (enemies[i].animFrame > 1) enemies[i].animFrame = 0;
+					if (enemies[i].animFrame > 4) enemies[i].animFrame = 0; 
 					break;
+
 				case STATE_ATTACK:
-					if (enemies[i].animFrame > 1) enemies[i].animFrame = 0;
+					if (enemies[i].animFrame > 2) enemies[i].animFrame = 0; 
 					break;
-				case STATE_DAMAGE:
-					if (enemies[i].animFrame > 0) {
-						enemies[i].animFrame = 0;
-						enemies[i].animState = STATE_RUNNING;
-					}
-					break;
+
 				case STATE_DYING:
-					if (enemies[i].animFrame > 0) {
+					if (enemies[i].animFrame > 4) {
 						enemies[i].active = false;
 					}
 					break;
+
 				default:
 					enemies[i].animFrame = 0;
 					break;
@@ -704,16 +754,40 @@ void moveEnemies() {
 				enemies[i].attackCooldown--;
 			}
 
-			// Update target every 30 frames
 			if (frameCount % 30 == 0) {
 				enemies[i].targetX = player.x;
 				enemies[i].targetY = player.y;
 			}
-
-			// Calculate direction to target
 			float dx = enemies[i].targetX - enemies[i].x;
 			float dy = enemies[i].targetY - enemies[i].y;
 			float distToPlayer = (float)sqrt(dx * dx + dy * dy);
+			if (distToPlayer <= ENEMY_ATTACK_RANGE) {
+
+				enemies[i].animState = STATE_ATTACK;
+
+				if (enemies[i].attackCooldown <= 0) {
+
+					if (!shieldActive) {
+						player.health -= ENEMY_ATTACK_DAMAGE;
+						if (player.health < 0) player.health = 0;
+
+
+						player.animState = STATE_DAMAGE;
+						player.animFrame = 0;
+						player.animDelay = 0;
+					}
+
+					enemies[i].attackCooldown = ENEMY_ATTACK_COOLDOWN;
+
+					if (player.health <= 0) {
+						addHighScore(player.score);
+						currentState = GAME_OVER;
+					}
+				}
+
+
+				continue;
+			}
 
 			if (dx < 0) {
 				enemies[i].facingLeft = true;
@@ -722,32 +796,31 @@ void moveEnemies() {
 				enemies[i].facingLeft = false;
 			}
 
-			// Check if any enemy is in front (closer to player)
 			bool enemyInFront = false;
 			for (int j = 0; j < MAX_ENEMIES; j++) {
 				if (i != j && enemies[j].active) {
-					// Check if enemy j is between enemy i and player
+
 					float djx = enemies[j].x - enemies[i].x;
 					float djy = enemies[j].y - enemies[i].y;
 					float distBetween = (float)sqrt(djx * djx + djy * djy);
 
-					// If another enemy is close and closer to player
+
 					float distJToPlayer = (float)sqrt(
 						(enemies[j].targetX - enemies[j].x) * (enemies[j].targetX - enemies[j].x) +
 						(enemies[j].targetY - enemies[j].y) * (enemies[j].targetY - enemies[j].y)
 						);
 
-					// Minimum distance between enemies
+
 					float minDistance = 150.0f;
 
 					if (distBetween < minDistance) {
-						// If the other enemy is closer to player, wait
+
 						if (distJToPlayer < distToPlayer) {
 							enemyInFront = true;
 							break;
 						}
 						else {
-							// Push this enemy to the side slightly
+
 							if (distBetween > 0) {
 								float pushX = (enemies[i].x - enemies[j].x) / distBetween;
 								enemies[i].x += pushX * 2.0f;
@@ -757,11 +830,10 @@ void moveEnemies() {
 				}
 			}
 
-			// Only move if no enemy is in front
+
 			if (!enemyInFront && distToPlayer > 5) {
 				enemies[i].animState = STATE_RUNNING;
 
-				// Move towards target
 				float moveX = (dx / distToPlayer) * enemies[i].speed;
 				float moveY = (dy / distToPlayer) * enemies[i].speed;
 
@@ -772,11 +844,11 @@ void moveEnemies() {
 				enemies[i].animState = STATE_IDLE;
 			}
 			else {
-				// Waiting behind another enemy - still show running animation
+
 				enemies[i].animState = STATE_RUNNING;
 			}
 
-			// Keep enemies within bounds
+
 			if (enemies[i].x < 30) enemies[i].x = 30;
 			if (enemies[i].x > WORLD_WIDTH - 70) enemies[i].x = (float)(WORLD_WIDTH - 70);
 
@@ -804,17 +876,21 @@ void shootProjectile(float dx, float dy) {
 		if (!projectiles[i].active) {
 			projectiles[i].active = true;
 
-			// Spawn near middle/front of player
+
 			if (dx >= 0)
 				projectiles[i].x = player.x + playerWidth * 0.5f - 10;
 			else
 				projectiles[i].x = player.x - playerWidth * 0.5f + 10;
 
-			projectiles[i].y = player.y + playerHeight * 0.35f;   // raise this to match hand/mouth/fire position
+			projectiles[i].y = player.y + playerHeight * 0.35f;  
 			projectiles[i].type = player.type;
 			projectiles[i].dx = dx * PROJECTILE_SPEED;
 			projectiles[i].dy = dy * PROJECTILE_SPEED;
 			projectiles[i].frame = 0;
+			bossShootAnimTimer = BOSS_SHOOT_ANIM_TICKS;
+			boss.animState = STATE_ATTACK;
+			boss.animFrame = 0;
+			boss.animDelay = 0;
 			break;
 		}
 	}
@@ -823,12 +899,12 @@ void shootProjectile(float dx, float dy) {
 void updateProjectiles() {
 	for (int i = 0; i < MAX_PROJECTILES; i++) {
 		if (projectiles[i].active) {
-			// Move projectile
+
 			projectiles[i].x += projectiles[i].dx;
 			projectiles[i].y += projectiles[i].dy;
 			projectiles[i].frame++;
 
-			// Deactivate if out of bounds
+
 			if (projectiles[i].x < -30 || projectiles[i].x > WORLD_WIDTH + 30 ||
 				projectiles[i].y < -30 || projectiles[i].y > WINDOW_HEIGHT + 30) {
 				projectiles[i].active = false;
@@ -837,41 +913,6 @@ void updateProjectiles() {
 	}
 }
 void checkCollisions() {
-	// Check enemy-player collision
-	for (int i = 0; i < MAX_ENEMIES; i++) {
-		if (enemies[i].active && enemies[i].animState != STATE_DYING) {
-			float playerLeft = player.x - playerWidth * 0.3f;
-			float playerRight = player.x + playerWidth * 0.3f;
-			float playerBottom = ground + 30;
-			float playerTop = ground + 140;
-
-			float enemyLeft = enemies[i].x - 40;
-			float enemyRight = enemies[i].x + 40;
-			float enemyBottom = ground + 30;
-			float enemyTop = ground + 140;
-
-			bool overlapX = (playerRight >= enemyLeft && playerLeft <= enemyRight);
-			bool overlapY = (playerTop >= enemyBottom && playerBottom <= enemyTop);
-
-			if (overlapX && overlapY && enemies[i].attackCooldown <= 0) {
-				if (!shieldActive) {
-					player.health -= 2;
-				}
-				enemies[i].animState = STATE_ATTACK;
-				enemies[i].animFrame = 0;
-				enemies[i].attackCooldown = 30;
-
-				if (player.health <= 0) {
-					player.health = 0;
-					addHighScore(player.score);
-					currentState = GAME_OVER;
-				}
-			}
-		}
-	}
-
-	// Check projectile-enemy collision - SIMPLE VERSION
-	// Check projectile-enemy collision
 	for (int i = 0; i < MAX_PROJECTILES; i++) {
 		if (!projectiles[i].active) continue;
 
@@ -902,16 +943,15 @@ void checkCollisions() {
 						if (!enemies[j].coinDropped) {
 							enemies[j].coinDropped = true;
 
-							// Random bullet drop (60%)
 							if (rand() % 100 < 60) {
-								int gain = 10 + rand() % 6; // 10-15
+								int gain = 10 + rand() % 6; 
 								spawnBulletPickup(enemies[j].x, ground + 40, gain);
 							}
 
-							// Count kills
+
 							enemiesKilledTotal++;
 
-							// Every 5 kills: chance to drop shield (40%)
+
 							if (enemiesKilledTotal % 5 == 0) {
 								if (rand() % 100 < 40) {
 									spawnShieldPickup(enemies[j].x, ground + 40);
@@ -961,12 +1001,12 @@ void checkButtonHover(int mx, int my) {
 	}
 }
 void drawStartPage() {
-	// Draw homepage background
+
 	if (menuBg) {
 		iShowImage(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, menuBg);
 	}
 
-	// Draw buttons with hover effects
+
 	for (int i = 0; i < buttonCount; i++) {
 
 		if (strcmp(buttons[i].text, "START GAME") == 0)
@@ -998,12 +1038,12 @@ void drawInstructions() {
 	}
 
 	iSetColor(255, 255, 255);
-	iText(400, 400, "1. Use ARROW KEYS to move your character");
-	iText(400, 350, "2. Press SPACE to shoot");
-	iText(400, 300, "3. Defeat DEMOGORGON enemies to earn points");
-	iText(400, 250, "4. Avoid enemy collision - your health will decrease");
+	iText(400, 400, " Use 'a' or 'd' KEYS to move your character ");
+	iText(400, 350, " Press SPACE to Jump ");
+	iText(400, 300, " Press 'f' to Shoot ");
+	iText(400, 250, " Defeat DEMOGORGON enemies to earn points ");
 
-	// Back button (buttons[7])
+
 	if (buttons[7].visible) {
 		iShowImage(buttons[7].x, buttons[7].y,
 			buttons[7].w, buttons[7].h,
@@ -1034,7 +1074,7 @@ void drawScorePage() {
 		}
 	}
 
-	// Back button (buttons[7])
+
 	if (buttons[7].visible) {
 		iShowImage(buttons[7].x, buttons[7].y,
 			buttons[7].w, buttons[7].h,
@@ -1052,7 +1092,7 @@ void drawCredits() {
 		iFilledRectangle(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	}
 
-	// Back button (buttons[7])
+
 	if (buttons[7].visible) {
 		iShowImage(buttons[7].x, buttons[7].y,
 			buttons[7].w, buttons[7].h,
@@ -1071,37 +1111,6 @@ void drawCharacterSelect() {
 		iFilledRectangle(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	}
 
-
-	/*	// Draw character buttons (buttons[5], buttons[6])
-	// Draw Steve button (index 5)
-	if (buttons[5].visible) {
-	iShowImage(buttons[5].x, buttons[5].y,
-	buttons[5].w, buttons[5].h,
-	backBtnImg);   // or a specific steve button image
-	}
-
-	// Draw Eleven button (index 6)
-	if (buttons[6].visible) {
-	iShowImage(buttons[6].x, buttons[6].y,
-	buttons[6].w, buttons[6].h,
-	backBtnImg);   // or a specific eleven button image
-	}
-
-
-	// Character previews
-	if (steveIdle) {
-	iShowImage(WINDOW_WIDTH / 2 - 250, 100, 200, 200, steveIdle);
-	}
-	iSetColor(255, 100, 0);
-	iText(WINDOW_WIDTH / 2 - 200, 60, "FLAME POWER");
-
-	if (elevenIdle) {
-	iShowImage(WINDOW_WIDTH / 2 + 50, 100, 200, 200, elevenIdle);
-	}
-	iSetColor(0, 100, 255);
-	iText(WINDOW_WIDTH / 2 + 100, 60, "WATER POWER");
-	*/
-	// Back button (buttons[7])
 	if (buttons[7].visible) {
 		iShowImage(buttons[7].x, buttons[7].y,
 			buttons[7].w, buttons[7].h,
@@ -1110,13 +1119,13 @@ void drawCharacterSelect() {
 }
 void drawBoldItalicOrangeStrokeText(int x, int y, const char* str, float scale = 0.25f)
 {
-	// orange
+
 	iSetColor(255, 140, 0);
 
 	glPushMatrix();
 	glTranslatef((float)x, (float)y, 0.0f);
 
-	// italic shear matrix (x' = x + shear*y)
+
 	const float shear = 0.35f;
 	float m[16] = {
 		1, 0, 0, 0,
@@ -1128,7 +1137,7 @@ void drawBoldItalicOrangeStrokeText(int x, int y, const char* str, float scale =
 
 	glScalef(scale, scale, 1.0f);
 
-	// fake bold: draw twice with slight x offset (stroke units)
+
 	for (int pass = 0; pass < 2; pass++) {
 		glPushMatrix();
 		glTranslatef((float)pass * 2.0f, 0.0f, 0.0f);
@@ -1140,14 +1149,13 @@ void drawBoldItalicOrangeStrokeText(int x, int y, const char* str, float scale =
 	glPopMatrix();
 }
 void drawGame() {
-	// Background
-	// Background
+
 	if (bossFightStarted && bossAreaBg) {
-		// Boss arena background: fixed to the screen
+
 		iShowImage(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, bossAreaBg);
 	}
 	else if (gameBg) {
-		// Normal scrolling world background
+
 		iShowImage((int)-cameraX, 0, WORLD_WIDTH, WINDOW_HEIGHT, gameBg);
 	}
 	else {
@@ -1155,29 +1163,37 @@ void drawGame() {
 		iFilledRectangle(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	}
 
-	// Enemies - WITH FLIPPING
+
 	for (int i = 0; i < MAX_ENEMIES; i++) {
 		if (enemies[i].active) {
 			enemies[i].frame++;
 
 			unsigned int currentEnemyImage = enemyIdle;
 
-			switch (enemies[i].animState) {
-			case STATE_RUNNING:
-				currentEnemyImage = (enemies[i].animFrame == 0) ? enemyRun1 : enemyRun2;
-				break;
-			case STATE_ATTACK:
-				currentEnemyImage = (enemies[i].animFrame == 0) ? enemyAttack1 : enemyAttack2;
-				break;
-			case STATE_DAMAGE:
-				currentEnemyImage = enemyDamage;
-				break;
-			case STATE_DYING:
-				currentEnemyImage = enemyDie;
-				break;
-			default:
+			if (enemies[i].animState == STATE_RUNNING) {
+				int f = enemies[i].animFrame % 5;
+				if (f == 0) currentEnemyImage = enemyRun1;
+				else if (f == 1) currentEnemyImage = enemyRun2;
+				else if (f == 2) currentEnemyImage = enemyRun3;
+				else if (f == 3) currentEnemyImage = enemyRun4;
+				else             currentEnemyImage = enemyRun5;
+			}
+			else if (enemies[i].animState == STATE_ATTACK) {
+				int f = enemies[i].animFrame % 3;
+				if (f == 0) currentEnemyImage = enemyAttack1;
+				else if (f == 1) currentEnemyImage = enemyAttack2;
+				else             currentEnemyImage = enemyAttack3;
+			}
+			else if (enemies[i].animState == STATE_DYING) {
+				int f = enemies[i].animFrame % 5;
+				if (f == 0) currentEnemyImage = enemyDeath1;
+				else if (f == 1) currentEnemyImage = enemyDeath2;
+				else if (f == 2) currentEnemyImage = enemyDeath3;
+				else if (f == 3) currentEnemyImage = enemyDeath4;
+				else             currentEnemyImage = enemyDeath5;
+			}
+			else {
 				currentEnemyImage = enemyIdle;
-				break;
 			}
 
 			if (currentEnemyImage) {
@@ -1200,7 +1216,6 @@ void drawGame() {
 
 	drawBoss();
 	drawCoins();
-	// Draw boss projectiles
 	for (int i = 0; i < MAX_BOSS_PROJECTILES; i++) {
 		if (bossProjectiles[i].active) {
 
@@ -1215,21 +1230,21 @@ void drawGame() {
 		}
 	}
 
-	// Player - WITH FLIPPING
 
-	if (player.isAttacking) {
-		player.animState = STATE_ATTACK;
-	}
-	else if (isKeyPressed('w') || isKeyPressed('s') ||
-		isKeyPressed('a') || isKeyPressed('d')) {
-		player.animState = STATE_RUNNING;
-	}
-	else {
-		player.animState = STATE_IDLE;
+	if (player.animState != STATE_DAMAGE) {
+		if (player.isAttacking) {
+			player.animState = STATE_ATTACK;
+		}
+		else if (isKeyPressed('a') || isKeyPressed('d')) {
+			player.animState = STATE_RUNNING;
+		}
+		else {
+			player.animState = STATE_IDLE;
+		}
 	}
 
 	unsigned int currentPlayerImage = 0;
-	bool playerFacingLeft = (player.direction == 1);  // direction 1 = left
+	bool playerFacingLeft = (player.direction == 1); 
 
 	if (player.type == STEVE) {
 
@@ -1240,17 +1255,24 @@ void drawGame() {
 			else if (player.jumpPhase == 4) currentPlayerImage = steveJump3;
 			else if (player.jumpPhase == 5) currentPlayerImage = steveLand;
 		}
+		else if (player.animState == STATE_DAMAGE) {
+			if (player.animFrame == 0) currentPlayerImage = steveDamage1;
+			else if (player.animFrame == 1) currentPlayerImage = steveDamage2;
+			else                            currentPlayerImage = steveDamage3;
+		}
 		else if (player.isAttacking) {
-			currentPlayerImage = stevePreShoot;
-			/*    player.attackFrame--;
-			if (player.attackFrame <= 0) {
-			player.isAttacking = false;
-			player.animState = STATE_IDLE;
-			}
-			*/
+			if (player.attackFrame > 8) currentPlayerImage = stevePreAttack;
+			else if (player.attackFrame > 4) currentPlayerImage = steveShoot;
+			else                             currentPlayerImage = stevePostShoot;
 		}
 		else if (isKeyPressed('a') || isKeyPressed('d')) {
-			currentPlayerImage = (player.animFrame % 2 == 0) ? steveRun1 : steveRun2;
+			int f = player.animFrame % 6;
+			if (f == 0) currentPlayerImage = steveRun1;
+			else if (f == 1) currentPlayerImage = steveRun2;
+			else if (f == 2) currentPlayerImage = steveRun3;
+			else if (f == 3) currentPlayerImage = steveRun4;
+			else if (f == 4) currentPlayerImage = steveRun5;
+			else             currentPlayerImage = steveRun6;
 		}
 		else {
 			currentPlayerImage = steveIdle;
@@ -1258,28 +1280,34 @@ void drawGame() {
 	}
 	else if (player.type == ELEVEN) {
 		if (player.jumpPhase != 0) {
-			if (player.jumpPhase == 1) currentPlayerImage = elevenPreJump;       // tries to jump
-			else if (player.jumpPhase == 2) currentPlayerImage = elevenJumpStart; // jumps (first airborne frame)
-			else if (player.jumpPhase == 3) currentPlayerImage = elevenJumpPeak;  // peak
+			if (player.jumpPhase == 1) currentPlayerImage = elevenPreJump;       
+			else if (player.jumpPhase == 2) currentPlayerImage = elevenJumpStart; 
+			else if (player.jumpPhase == 3) currentPlayerImage = elevenJumpPeak;  
 			else if (player.jumpPhase == 4) {
-				// coming down; when near ground show "going to land"
-				if (player.y <= ground + 25) currentPlayerImage = elevenToLand;   // going to land
-				else currentPlayerImage = elevenJumpDown;                         // coming down
+				if (player.y <= ground + 25) currentPlayerImage = elevenToLand;  
+				else currentPlayerImage = elevenJumpDown;                         
 			}
-			else if (player.jumpPhase == 5) currentPlayerImage = elevenLand;      // lands
+			else if (player.jumpPhase == 5) currentPlayerImage = elevenLand;      
 		}
 
-		// 2) Attack (only if not jumping)
+		else if (player.animState == STATE_DAMAGE) {
+			if (player.animFrame == 0) currentPlayerImage = elevenPreDamage;
+			else if (player.animFrame == 1) currentPlayerImage = elevenDamage;
+			else                            currentPlayerImage = elevenPostDamage;
+		}
 		else if (player.isAttacking) {
-			if (player.attackFrame > 25)
-				currentPlayerImage = elevenPreShoot;
-			else
-				currentPlayerImage = elevenAttack1;
+			if (player.attackFrame > 8) currentPlayerImage = elevenPreAttack;
+			else if (player.attackFrame > 4) currentPlayerImage = elevenPreAttack1;
+			else                             currentPlayerImage = elevenAttack;
 		}
-
-		// 3) Run / Idle
 		else if (isKeyPressed('a') || isKeyPressed('d')) {
-			currentPlayerImage = (player.animFrame % 2 == 0) ? elevenRun1 : elevenRun2;
+			int f = player.animFrame % 6;
+			if (f == 0) currentPlayerImage = elevenRun1;
+			else if (f == 1) currentPlayerImage = elevenRun2;
+			else if (f == 2) currentPlayerImage = elevenRun3;
+			else if (f == 3) currentPlayerImage = elevenRun4;
+			else if (f == 4) currentPlayerImage = elevenRun5;
+			else             currentPlayerImage = elevenRun6;
 		}
 		else {
 			currentPlayerImage = elevenIdle;
@@ -1289,20 +1317,16 @@ void drawGame() {
 	if (currentPlayerImage) {
 		int drawY = ground;
 		int drawX = (int)(player.x - cameraX) - playerWidth / 2;
-		// USE FLIPPED RENDERING FOR PLAYER
+
 		iShowImageFlipped(
 			drawX,
 			(int)player.y,
 			playerWidth,
 			playerHeight,
 			currentPlayerImage,
-			playerFacingLeft  // Flip when facing left (direction == 1)
+			playerFacingLeft  
 			);
 
-
-		// ===== DRAW ALL PROJECTILES ON TOP =====
-
-		// Player projectiles
 		for (int i = 0; i < MAX_PROJECTILES; i++) {
 			if (projectiles[i].active) {
 				int screenX = (int)(projectiles[i].x - cameraX);
@@ -1334,7 +1358,7 @@ void drawGame() {
 			}
 		}
 
-		// Boss projectiles (same style as player but purple)
+
 		for (int i = 0; i < MAX_BOSS_PROJECTILES; i++) {
 			if (bossProjectiles[i].active) {
 				int screenX = (int)(bossProjectiles[i].x - cameraX);
@@ -1360,16 +1384,13 @@ void drawGame() {
 
 	}
 
-	// UI: health bar
-	// Draw health bar image (background)
+
 	int fillX = 116;
 	int fillY = 645;
 	int maxFillWidth = 175;
 	int fillH = 15;
-	// Draw image
 
 
-	// Fill inside using your measured values
 	iSetColor(0, 128, 0);
 	iFilledRectangle(
 		fillX,
@@ -1379,26 +1400,12 @@ void drawGame() {
 		);
 
 	iShowImage(20, WINDOW_HEIGHT - 80, 300, 60, healthBarImg);
-	// Draw actual health (fill)
-	//	iSetColor(255, 80, 80);
-	//	iFilledRectangle(45, WINDOW_HEIGHT - 52, player.health * 1.5, 15);
-
-	//	char healthText[50];
-	//sprintf_s(healthText, sizeof(healthText), "HP: %d", player.health);
-	//	iSetColor(255, 255, 255);
-	//	iText(90, WINDOW_HEIGHT - 45, healthText);
 
 	char scoreTextBuf[50];
 	sprintf_s(scoreTextBuf, sizeof(scoreTextBuf), "Score: %d", player.score);
 	iSetColor(255, 255, 0);
 	iText(WINDOW_WIDTH - 200, WINDOW_HEIGHT - 45, scoreTextBuf);
 
-	/*	char bulletText[50];
-	sprintf_s(bulletText, sizeof(bulletText), "Bullets: %d",bulletCount);
-	iSetColor(255, 215, 0);
-	iText(WINDOW_WIDTH - 220, WINDOW_HEIGHT - 120, bulletText);
-	*/
-	// ---- Bottom-right fire icon + bullet count ----
 	int margin = 20;
 	int iconW = 70, iconH = 70;
 
@@ -1412,9 +1419,9 @@ void drawGame() {
 	char bulletsBuf[32];
 	sprintf_s(bulletsBuf, sizeof(bulletsBuf), "%d", bulletCount);
 
-	// Draw number beside the icon (to the left)
+
 	drawBoldItalicOrangeStrokeText(iconX - 60, iconY + 18, bulletsBuf, 0.30f);
-	// Enemy count
+
 	int enemyCount = 0;
 	for (int i = 0; i < MAX_ENEMIES; i++) {
 		if (enemies[i].active) enemyCount++;
@@ -1481,7 +1488,7 @@ void drawPause() {
 		if (buttons[i].visible) {
 			iShowImage(buttons[i].x, buttons[i].y,
 				buttons[i].w, buttons[i].h,
-				startBtnImg);  // or proper image
+				startBtnImg); 
 		}
 	}
 }
@@ -1537,11 +1544,9 @@ void updateGame() {
 
 	updateAnimations();
 
-	/*	int spawnRate = 200 - (player.score / 10);  // Much slower spawning
-	if (spawnRate < 100) spawnRate = 100;        // Minimum delay
-	*/
+
 	int spawnRate = 220 - player.score / 20;
-	if (spawnRate < 90) spawnRate = 90; // Fixed slow spawn rate
+	if (spawnRate < 90) spawnRate = 90;
 	if (!bossFightStarted && enemySpawnTimer > spawnRate) {
 		spawnEnemy();
 		enemySpawnTimer = 0;
@@ -1549,15 +1554,7 @@ void updateGame() {
 
 	float moveX = 0, moveY = 0;
 
-	//	if (isKeyPressed('w') && player.y < WINDOW_HEIGHT - 70) {
-	//		moveY += PLAYER_SPEED;
-	//		player.direction = 2;
-	//	}
-	//	if (isKeyPressed('s') && player.y > 30) {
-	//		moveY -= PLAYER_SPEED;
-	//		player.direction = 3;
-	//	}
-	// ---- update attack timer here (NOT in drawGame) ----
+
 	if (player.isAttacking) {
 		player.attackFrame--;
 		if (player.attackFrame <= 0) {
@@ -1570,28 +1567,27 @@ void updateGame() {
 	if (player.score >= BOSS_TRIGGER_SCORE && !boss.spawned) {
 		spawnBoss();
 	}
-	// ---- movement (ONLY move the player here) ----
+
 
 	if (isKeyPressed('a')) {
 		moveX -= PLAYER_SPEED;
-		player.direction = 1; // left
+		player.direction = 1; 
 	}
 	if (isKeyPressed('d')) {
 		moveX += PLAYER_SPEED;
-		player.direction = 0; // right
+		player.direction = 0; 
 	}
 
 	player.x += moveX;
 
-	// keep player inside the world
+
 	float halfW = playerWidth * 0.5f;
 	if (player.x < halfW) player.x = halfW;
 	if (player.x > WORLD_WIDTH - halfW) player.x = WORLD_WIDTH - halfW;
 
-	// ---- camera follow with dead-zone (prevents shaking) ----
-	// ---- camera ----
+
 	if (!bossCameraLocked) {
-		// Normal camera follow with dead-zone
+
 		float leftMargin = 300.0f;
 		float rightMargin = 500.0f;
 
@@ -1600,16 +1596,14 @@ void updateGame() {
 		if (screenX < leftMargin)  cameraX = player.x - leftMargin;
 		if (screenX > rightMargin) cameraX = player.x - rightMargin;
 
-		// clamp camera
+
 		if (cameraX < 0) cameraX = 0;
 		if (cameraX > WORLD_WIDTH - WINDOW_WIDTH)
 			cameraX = WORLD_WIDTH - WINDOW_WIDTH;
 	}
 	else {
-		// Boss arena: lock camera
-		cameraX = bossCameraLockX;
 
-		// Clamp player inside the visible boss arena
+		cameraX = bossCameraLockX;
 		float halfW = playerWidth * 0.5f;
 		if (player.x < bossArenaLeft + halfW)  player.x = bossArenaLeft + halfW;
 		if (player.x > bossArenaRight - halfW) player.x = bossArenaRight - halfW;
@@ -1622,7 +1616,6 @@ void updateGame() {
 	}
 
 
-	// only lock to ground if not jumping
 	if (player.jumpPhase == 0) player.y = ground;
 	else updateJump();
 
@@ -1641,14 +1634,13 @@ void updateGame() {
 	}
 }
 int page = 0;
-// iDraw function - called by iGraphics
+
 void updateBoss() {
 	if (!boss.active) return;
 
-	// Handle dying animation
 	if (boss.animState == STATE_DYING) {
 		boss.animDelay++;
-		if (boss.animDelay > 30) {
+		if (boss.animDelay > 10) {
 			boss.animDelay = 0;
 			boss.animFrame++;
 			if (boss.animFrame > 1) {
@@ -1659,10 +1651,9 @@ void updateBoss() {
 		return;
 	}
 
-	// ADDED: If taking damage, stand still and wait. Do not move or shoot.
 	if (boss.animState == STATE_DAMAGE) {
 		boss.animDelay++;
-		if (boss.animDelay > 30) { // Pause for ~0.6 seconds
+		if (boss.animDelay > 30) { 
 			boss.animDelay = 0;
 			boss.animFrame = 0;
 			boss.animState = STATE_IDLE;
@@ -1673,34 +1664,44 @@ void updateBoss() {
 	if (boss.attackCooldown > 0)
 		boss.attackCooldown--;
 
+	if (bossShootAnimTimer > 0) {
+		bossShootAnimTimer--;
+		boss.animState = STATE_ATTACK;
+
+		boss.animDelay++;
+		if (boss.animDelay > 12) {         
+			boss.animDelay = 0;
+			boss.animFrame = (boss.animFrame + 1) % 2; 
+		}
+		return; 
+	}
 	float dx = player.x - boss.x;
 	float dist = fabs(dx);
 
 	boss.facingLeft = (dx < 0);
 
-	// ADDED: Define the exact gap where the boss stops to shoot
+	
 	float shootDistance = 400.0f;
 
 	if (dist > shootDistance) {
-		// Player is too far: move towards player, DO NOT shoot
+
 		if (dx > 0) boss.x += 1.5f;
 		else boss.x -= 1.5f;
 
-		boss.animState = STATE_IDLE; // Uses idle since there is no boss run sprite
+		boss.animState = STATE_IDLE; 
 	}
 	else {
-		// Boss is at the perfect gap: Stop moving and shoot
+	
 		boss.animState = STATE_IDLE;
 
 		if (boss.attackCooldown <= 0) {
 			boss.animState = STATE_ATTACK;
 			shootBossProjectile();
-			boss.attackCooldown = 120; // Shoot every 2.4 seconds
+			boss.attackCooldown = 120; 
 		}
 	}
 
-	// Keep boss inside world bounds
-	// Keep boss inside bounds
+
 	if (bossCameraLocked) {
 		float bossWidth = 300.0f * SCALE;
 		float bossHalfW = bossWidth * 0.5f;
@@ -1713,7 +1714,7 @@ void updateBoss() {
 		if (boss.x > WORLD_WIDTH - 100) boss.x = WORLD_WIDTH - 100;
 	}
 
-	// Animation timer
+
 	boss.animDelay++;
 	if (boss.animDelay > 20) {
 		boss.animDelay = 0;
@@ -1760,7 +1761,7 @@ void updateBossProjectiles() {
 void checkBossCollisions() {
 	if (!boss.active) return;
 
-	// -------- player projectile vs boss --------
+
 	float bossLeft = boss.x - 80;
 	float bossRight = boss.x + 80;
 	float bossBottom = ground + 20;
@@ -1780,10 +1781,9 @@ void checkBossCollisions() {
 			boss.health--;
 			bossHitsTaken++;
 
-			// ---------- DROP LOGIC (every 5 hits bullets, every 8 hits shield) ----------
+
 			float dropX = boss.x + (boss.facingLeft ? -160.0f : 160.0f);
 
-			// keep drop inside arena/world
 			if (bossCameraLocked) {
 				if (dropX < bossArenaLeft + 40)  dropX = bossArenaLeft + 40;
 				if (dropX > bossArenaRight - 40) dropX = bossArenaRight - 40;
@@ -1793,21 +1793,19 @@ void checkBossCollisions() {
 				if (dropX > WORLD_WIDTH - 40) dropX = WORLD_WIDTH - 40;
 			}
 
-			// bullets every 5 hits: 5,10,15...
+
 			while (bossHitsTaken >= nextBossBulletDropHit) {
-				int gain = 10 + rand() % 6; // 10-15
+				int gain = 10 + rand() % 6; 
 				spawnBulletPickup(dropX, ground + 40, gain);
 				nextBossBulletDropHit += 8;
 			}
 
-			// shield every 8 hits: 8,16,24...
+
 			while (bossHitsTaken >= nextBossShieldDropHit) {
 				spawnShieldPickup(dropX, ground + 40);
 				nextBossShieldDropHit += 15;
 			}
-			// ---------------------------------------------------------------------------
 
-			// death check (ONLY ONCE)
 			if (boss.health <= 0) {
 				boss.health = 0;
 				boss.animState = STATE_DYING;
@@ -1815,7 +1813,7 @@ void checkBossCollisions() {
 				player.score += 100;
 			}
 			else {
-				// Only delay/reset boss shooting after every 3 hits
+
 				bossHitsForShootReset++;
 				if (bossHitsForShootReset >= SHOOT_RESET_AFTER_HITS) {
 					bossHitsForShootReset = 0;
@@ -1824,7 +1822,7 @@ void checkBossCollisions() {
 					boss.animFrame = 0;
 					boss.animDelay = 0;
 
-					boss.attackCooldown = 90;
+					boss.attackCooldown = 40;
 				}
 			}
 			if (boss.health <= 0) {
@@ -1836,7 +1834,7 @@ void checkBossCollisions() {
 		}
 	}
 
-	// -------- boss projectile vs player --------
+
 	float playerLeft = player.x - playerWidth * 0.25f;
 	float playerRight = player.x + playerWidth * 0.25f;
 	float playerBottom = player.y;
@@ -1853,8 +1851,13 @@ void checkBossCollisions() {
 
 			bossProjectiles[i].active = false;
 			if (!shieldActive) {
-				player.health -= 15;   // boss damage = 15
+				player.health -= 15; 
 				if (player.health < 0) player.health = 0;
+			}
+			if (!shieldActive) {
+				player.animState = STATE_DAMAGE;
+				player.animFrame = 0;
+				player.animDelay = 0;
 			}
 
 			if (player.health <= 0) {
@@ -1890,28 +1893,26 @@ void drawBoss() {
 		boss.facingLeft
 		);
 
-	// Reset color after image draw
+
 	iSetColor(255, 255, 255);
 
-	// boss health bar
-	// Draw boss health bar background
+
 	iSetColor(60, 0, 60);
 	iFilledRectangle(WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT - 30, 400, 20);
 
-	// Draw boss health bar fill
+
 	iSetColor(180, 0, 180);
 	iFilledRectangle(WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT - 30,
 		(int)(400.0f * boss.health / boss.maxHealth), 20);
 
-	// Draw border
+
 	iSetColor(255, 255, 255);
 	iRectangle(WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT - 30, 400, 20);
 
-	// Draw label
+
 	iSetColor(255, 255, 255);
 	iText(WINDOW_WIDTH / 2 - 30, WINDOW_HEIGHT - 25, "BOSS");
 
-	// Reset color to white after boss drawing
 	iSetColor(255, 255, 255);
 
 
@@ -1956,29 +1957,29 @@ void iDraw() {
 }
 void changepage()
 {
-	if (page == 0)   // Only change if still on homepage
+	if (page == 0)   
 	{
 		page = 1;
 	}
 }
-// iMouseMove function
+
 void iMouseMove(int mx, int my) {
 	mouseX = mx;
 	mouseY = my;
 	checkButtonHover(mx, my);
 }
 
-// iPassiveMouseMove function
+
 void iPassiveMouseMove(int mx, int my) {
 	mouseX = mx;
 	mouseY = my;
 	checkButtonHover(mx, my);
 }
 
-// iMouse function
+
 void iMouse(int button, int state, int x, int y) {
-	printf("x=%d & y=%d\n", x, y);
-	if (button == 0 && state == 0) { // Left button down
+
+	if (button == 0 && state == 0) { 
 		for (int i = 0; i < buttonCount; i++) {
 			if (buttons[i].visible &&
 				x >= buttons[i].x && x <= buttons[i].x + buttons[i].w &&
@@ -2014,10 +2015,8 @@ void iMouse(int button, int state, int x, int y) {
 	}
 }
 
-// Keyboard function
 void iKeyboard(unsigned char key) {
 
-	// Jump (SPACE)
 	if (key == ' ') {
 		if (currentState == PLAYING && !gamePaused) {
 			if (player.y <= ground + 0.1f && player.jumpPhase == 0) {
@@ -2027,7 +2026,7 @@ void iKeyboard(unsigned char key) {
 		return;
 	}
 
-	// Shoot
+
 	if (key == 'f') {
 		if (currentState == PLAYING && !gamePaused && !player.isAttacking && bulletCount > 0) {
 			player.isAttacking = true;
@@ -2040,7 +2039,7 @@ void iKeyboard(unsigned char key) {
 		return;
 	}
 
-	// Pause
+
 	if (key == 'p' || key == 'P') {
 		if (currentState == PLAYING) {
 			gamePaused = true;
@@ -2053,7 +2052,7 @@ void iKeyboard(unsigned char key) {
 		return;
 	}
 
-	// ESC
+
 	if (key == 27) {
 		if (currentState == PLAYING || currentState == PAUSED) {
 			gamePaused = false;
@@ -2065,17 +2064,17 @@ void iKeyboard(unsigned char key) {
 		return;
 	}
 }
-// Special keyboard function
+
 void iSpecialKeyboard(unsigned char key) {
-	// Key states are automatically tracked by iGraphics
+
 }
 
-// Fixed update function (called by timer)
+
 void fixedUpdate() {
 
 }
 
-// Main function
+
 int main() {
 	iInitialize(WINDOW_WIDTH, WINDOW_HEIGHT, "DEMOGORGON - Stranger Things Game");
 	initGame();
